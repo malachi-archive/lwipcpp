@@ -14,6 +14,8 @@ namespace lwip
     public:
         Netconn(struct netconn* conn) : conn(conn) {}
 
+        bool isAllocated() { return conn; }
+
         Netconn(enum netconn_type t, uint8_t proto = 0, netconn_callback callback = NULL)
         {
             conn = netconn_new_with_proto_and_callback(t, proto, callback);
@@ -49,5 +51,25 @@ namespace lwip
         {
             return netconn_write_partly(conn, dataptr, size, apiflags, bytes_written);
         }
+
+        err_t send(struct netbuf* buf)
+        {
+            return netconn_send(conn, buf);
+        }
+    };
+
+
+    class Netbuf
+    {
+        struct netbuf* buf;
+
+    public:
+        Netbuf() { buf = netbuf_new(); }
+        ~Netbuf() { netbuf_delete(buf); }
+
+        operator netbuf*()
+        { return buf; }
+
+        void* alloc(size_t size) { return netbuf_alloc(buf, size); }
     };
 }
