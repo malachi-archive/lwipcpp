@@ -5,6 +5,8 @@ extern "C"
     #include "lwip/api.h"
 }
 
+#include "netbuf.hpp"
+
 namespace lwip
 {
     class Netconn
@@ -56,9 +58,25 @@ namespace lwip
         {
             return netconn_send(conn, buf);
         }
+
+        err_t sendTo(struct netbuf* buf, ip_addr_t* addr, u16_t port)
+        {
+            return netconn_sendto(conn, buf, addr, port);
+        }
+
+        err_t recv(struct netbuf **new_buf)
+        {
+            return netconn_recv(conn, new_buf);
+        }
+
+        void set_recvtimeout(u16_t timeout)
+        {
+            netconn_set_recvtimeout(conn, timeout);
+        }
     };
 
 
+    /*
     class Netbuf
     {
         struct netbuf* buf;
@@ -71,5 +89,5 @@ namespace lwip
         { return buf; }
 
         void* alloc(size_t size) { return netbuf_alloc(buf, size); }
-    };
+    }; */
 }
