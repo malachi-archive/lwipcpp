@@ -40,6 +40,11 @@ namespace lwip
             return netconn_accept(conn, new_conn);
         }
 
+        err_t disconnect()
+        {
+            return netconn_disconnect(conn);
+        }
+
         err_t del()
         {
             return netconn_delete(conn);

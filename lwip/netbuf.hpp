@@ -47,6 +47,12 @@ namespace lwip
 
         size_t len() { return netbuf_len(buf); }
 
+        // retrieve part of the chained buffer inside
+        err_t data(void** dataptr, u16_t* len)
+        {
+            return netbuf_data(buf, dataptr, len);
+        }
+
         void* alloc(size_t size)
         {
             return netbuf_alloc(buf, size);
