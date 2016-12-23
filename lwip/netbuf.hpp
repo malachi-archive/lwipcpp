@@ -8,12 +8,31 @@ extern "C"
 
 namespace lwip
 {
+    class Netconn;
+
     class Netbuf
     {
         netbuf* buf;
 
+        friend Netconn;
+
+    protected:
+        void setBuffer(netbuf* buf) { this->buf = buf; }
+
     public:
-        //Netbuf() { newbuf_new(&buf); }
+        Netbuf(bool autoAllocate = true)
+        {
+            if(autoAllocate)
+                buf = netbuf_new();
+        }
+
+        // auto-calls ref for this one. be careful, because
+        // you can't get your err_t back
+        Netbuf(const void* data, u16_t size)
+        {
+            buf = netbuf_new();
+            ref(data, size);
+        }
 
         /*
         Netbuf(size_t size)
@@ -21,8 +40,6 @@ namespace lwip
             buf = netbuf_new();
             alloc(size);
         }*/
-
-        Netbuf() { buf = netbuf_new(); }
 
         Netbuf(netbuf* buf) { this->buf = buf; }
 
