@@ -9,6 +9,8 @@ extern "C"
 #define ASSERT(condition, message)
 #endif
 
+#define ASSERT_RESULT(result)   ASSERT(result == 0, "failed with code: " << result);
+
 
 namespace lwip
 {
@@ -69,14 +71,14 @@ namespace lwip
         {
             err_t result = netbuf_ref(buf, data, size);
             
-            ASSERT(result, "failed with code: " << result);
+            ASSERT_RESULT(result);
             
             return result;
         }
 
-        void del() { return netbuf_delete(buf); }
+        void del() { netbuf_delete(buf); }
         
-        void free() { return netbuf_free(buf); }
+        void free() { netbuf_free(buf); }
 
         err_t copy(void* dest, u16_t size)
         {
@@ -94,3 +96,5 @@ namespace lwip
         }
     };
 }
+
+#undef ASSERT_RESULT
