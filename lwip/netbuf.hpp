@@ -5,6 +5,10 @@ extern "C"
     #include "lwip/netbuf.h"
 }
 
+#ifndef ASSERT
+#define ASSERT(condition, message)
+#endif
+
 
 namespace lwip
 {
@@ -31,6 +35,9 @@ namespace lwip
         Netbuf(const void* data, u16_t size)
         {
             buf = netbuf_new();
+            
+            ASSERT(buf != NULL, "Buf cannot be NULL");
+            
             ref(data, size);
         }
 
@@ -43,9 +50,9 @@ namespace lwip
 
         Netbuf(netbuf* buf) { this->buf = buf; }
 
-        operator netbuf*() { return buf; }
+        operator netbuf*() const { return buf; }
 
-        size_t len() { return netbuf_len(buf); }
+        size_t len() const { return netbuf_len(buf); }
 
         // retrieve part of the chained buffer inside
         err_t data(void** dataptr, u16_t* len)
@@ -60,22 +67,28 @@ namespace lwip
 
         err_t ref(const void* data, u16_t size)
         {
-            return netbuf_ref(buf, data, size);
+            err_t result = netbuf_ref(buf, data, size);
+            
+            ASSERT(result, "failed with code: " << result);
+            
+            return result;
         }
 
         void del() { return netbuf_delete(buf); }
+        
+        void free() { return netbuf_free(buf); }
 
         err_t copy(void* dest, u16_t size)
         {
             return netbuf_copy(buf, dest, size);
         }
 
-        ip_addr_t* fromAddr()
+        ip_addr_t* fromAddr() const
         {
             return netbuf_fromaddr(buf);
         }
 
-        u16_t fromPort()
+        u16_t fromPort() const
         {
             return netbuf_fromport(buf);
         }
