@@ -3,18 +3,19 @@
 extern "C"
 {
     #include "lwip/udp.h"
+    #include "pbuf.hpp"
 }
 
 
 namespace lwip
 {
-    class Udp
+    class UDP
     {
         struct udp_pcb* pcb;
 
     public:
-        Udp() { pcb = udp_new(); }
-        ~Udp() { udp_remove(pcb); }
+        UDP() { pcb = udp_new(); }
+        ~UDP() { udp_remove(pcb); }
 
         err_t bind(struct ip_addr* ipaddr, u16_t port)
         {
@@ -39,5 +40,31 @@ namespace lwip
         {
             udp_recv(pcb, recv_f, recv_arg);
         }
+
+        err_t send(struct pbuf* p)
+        {
+            return udp_send(pcb, p);
+        }
     };
+
+namespace layer5
+{
+    class UDP : public lwip::UDP
+    {
+    public:
+        UDP()
+        {
+            recv([](
+                void* arg, struct udp_pcb* upcb,
+                struct pbuf* p,
+                struct ip_addr* addr,
+                u16_t port)
+                {
+                    ((UDP*)arg)->onReceive(PacketBuffer(p), addr, port);
+                }, this);
+        }
+
+        virtual void onReceive(PacketBuffer p, const ip_addr_t *addr, u16_t port) = 0;
+    };
+}
 }
