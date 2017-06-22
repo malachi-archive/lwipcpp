@@ -1,13 +1,17 @@
-//#define MDNS_SMART_INIT
-#define DEBUG_MDNS_INITIALIZER
+//#define DEBUG_MDNS_INITIALIZER
+
+#include "mdns_opts.hpp"
 
 extern "C" {
 #include <lwip/netif.h>
 #include <lwip/apps/mdns.h>
 #include <lwip/igmp.h>
 
-#ifdef DEBUG_MDNS_INITIALIZER
+#if MDNS_SMART_INIT
 #include <lwip/udp.h>
+#endif
+
+#ifdef DEBUG_MDNS_INITIALIZER
 #include <FreeRTOS.h>
 #endif
 
@@ -52,6 +56,7 @@ class Responder
 #endif
     static constexpr uint32_t ttl_seconds_default = 60;
 
+#if MDNS_SMART_INIT
     // Attempts to rebind to what should be an already-bound
     // listener if mdns_resp_init was already called
     static bool detect_initialized()
@@ -76,11 +81,12 @@ class Responder
         // returns true when already initialized
         return res != ERR_OK;
     }
+#endif
 
 public:
     inline static void init()
     {
-#ifdef MDNS_SMART_INIT
+#if MDNS_SMART_INIT
 #ifdef DEBUG_MDNS_INITIALIZER
         printf("Free heap 0: %lu\r\n", xPortGetFreeHeapSize());
 #endif
@@ -95,7 +101,7 @@ public:
 
     inline Responder(netif* n, const char* hostname, uint32_t ttl_seconds = ttl_seconds_default) : n(n)
     {
-#if MDNS_AUTOINIT
+#if MDNS_SMART_INIT
         init();
 #endif
         n->flags |= NETIF_FLAG_IGMP;
