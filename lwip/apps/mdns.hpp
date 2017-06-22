@@ -27,12 +27,11 @@ struct service_def
 };
     
 
-
-        
-class mDNSResponder
+class Responder
 {
     struct netif* n;
     
+#ifdef MDNS_STATIC_CONSTRUCTOR
     struct static_constructor
     {
         static_constructor()
@@ -42,39 +41,45 @@ class mDNSResponder
     };
     
     static static_constructor _sc;
+#endif
     static constexpr uint32_t ttl_seconds_default = 60;
     
 public:
-    inline mDNSResponder(netif* n, const char* hostname, uint32_t ttl_seconds = ttl_seconds_default) : n(n)
+    inline static void init() { mdns_resp_init(); }
+    
+    inline Responder(netif* n, const char* hostname, uint32_t ttl_seconds = ttl_seconds_default) : n(n)
     {
+#if MDNS_AUTOINIT
+        init();
+#endif
         n->flags |= NETIF_FLAG_IGMP;
         mdns_resp_add_netif(n, hostname, ttl_seconds);
     }
     
     
-    mDNSResponder(const char* name, const char* hostname, uint32_t ttl_seconds = ttl_seconds_default) : 
-        mDNSResponder(netif_find(name), hostname, ttl_seconds) 
+    Responder(const char* name, const char* hostname, uint32_t ttl_seconds = ttl_seconds_default) : 
+        Responder(netif_find(name), hostname, ttl_seconds) 
     {
     }
     
-    mDNSResponder(const char* hostname, uint32_t ttl_seconds = ttl_seconds_default) : 
-        mDNSResponder(netif_default, hostname, ttl_seconds)
+    Responder(const char* hostname, uint32_t ttl_seconds = ttl_seconds_default) : 
+        Responder(netif_default, hostname, ttl_seconds)
     {}
     
     
 #if LWIP_NETIF_HOSTNAME
-    mDNSResponder(netif* n, uint32_t ttl_seconds = ttl_seconds_default) : 
-        mDNSResponder(n, netif_get_hostname(n), ttl_seconds)
+    Responder(netif* n, uint32_t ttl_seconds = ttl_seconds_default) : 
+        Responder(n, netif_get_hostname(n), ttl_seconds)
     {
     }
 
-    mDNSResponder(uint32_t ttl_seconds = ttl_seconds_default) : 
-        mDNSResponder(netif_default, ttl_seconds)
+    Responder(uint32_t ttl_seconds = ttl_seconds_default) : 
+        Responder(netif_default, ttl_seconds)
     {
     }
 #endif
 
-    ~mDNSResponder() { mdns_resp_remove_netif(n); }
+    ~Responder() { mdns_resp_remove_netif(n); }
 
     inline err_t add_service(const char* name, const char* service, enum mdns_sd_proto proto, 
         uint16_t port, uint32_t ttl_seconds, service_get_txt_fn_t txt_fn, void* txt_data)
@@ -91,12 +96,12 @@ public:
     }
     
     
-    inline mDNSResponder& operator+=(mDNSResponder& (*__pf)(mDNSResponder&))
+    inline Responder& operator+=(Responder& (*__pf)(Responder&))
     {
         return __pf(*this);
     }
     
-    inline mDNSResponder& operator+=(const service_def&& sd)
+    inline Responder& operator+=(const service_def&& sd)
     {
         add_service(sd.name, sd.service, sd.proto, sd.port, 
             sd.ttl_seconds, sd.txt_fn, sd.txt_data);
@@ -136,7 +141,7 @@ inline const service_def http(const char* name = "web", uint16_t port = 80, uint
     return sd;
 }
 
-inline mDNSResponder& http(mDNSResponder& mdns)
+inline Responder& http(Responder& mdns)
 {
     return mdns += http();
 }

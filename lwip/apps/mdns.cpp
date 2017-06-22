@@ -1,9 +1,11 @@
 #include "mdns.hpp"
 
+#ifdef MDNS_STATIC_CONSTRUCTOR
+
 namespace lwip { namespace mdns {
 
-// Some compilers optimize this out, so possibly we don't even need 
-// it
-mDNSResponder::static_constructor mDNSResponder::_sc;
+Responder::static_constructor Responder::_sc;
     
 }}
+
+#endif
