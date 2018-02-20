@@ -25,7 +25,11 @@ namespace lwip
             conn = netconn_new_with_proto_and_callback(t, proto, callback);
         }
 
+#ifdef ESP8266
+        err_t bind(ip_addr_t* addr, u16_t port)
+#else
         err_t bind(const ip_addr_t* addr, u16_t port)
+#endif
         {
             return netconn_bind(conn, addr, port);
         }
