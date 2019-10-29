@@ -1,0 +1,4 @@
+[submodule "ext/estdlib"]
+	path = ext/estdlib
+	url = git@github.com:malachi-iot/estdlib.git
+	shallow = true
