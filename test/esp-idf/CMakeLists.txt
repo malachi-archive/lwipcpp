@@ -1,6 +1,5 @@
-set(COMPONENT_SRCDIRS ".")
-set(COMPONENT_ADD_INCLUDEDIRS ".")
-set(COMPONENT_REQUIRES unity)
+# This is the project CMakeLists.txt file for the test subproject 
+cmake_minimum_required(VERSION 3.5)
 
-register_component()
-
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(unit_test)
